@@ -9,17 +9,15 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(
     page_title="Iris Flower Classifier",
-    page_icon="🌸",
+    page_icon="🌺",
     layout="centered",
     initial_sidebar_state="expanded"
 )
 
 st.title("🌸 Iris Flower Species Classifier")
-st.write("Adjust the sliders in the sidebar to predict the iris flower species.")
+st.write("Adjust the sliders to predict the species in real-time.")
 
-# ---------------------------
 # Load Data
-# ---------------------------
 @st.cache_data
 def load_data():
     iris = load_iris()
@@ -29,131 +27,96 @@ def load_data():
 
 df, target_names = load_data()
 
-# ---------------------------
 # Train Model
-# ---------------------------
 @st.cache_resource
 def train_model(df):
-    model = RandomForestClassifier(
-        n_estimators=200,
-        max_depth=5,
-        random_state=42
-    )
+    model = RandomForestClassifier(n_estimators=200, max_depth=5, random_state=42)
     model.fit(df.iloc[:, :-1], df["Species"])
     return model
 
 model = train_model(df)
 
-# ---------------------------
 # Sidebar Inputs
-# ---------------------------
-with st.sidebar.form("input_form"):
-    st.subheader("Input Features")
-    sepal_length = st.slider("Sepal Length", *df['sepal length (cm)'].agg(['min', 'max']).astype(float))
-    sepal_width = st.slider("Sepal Width", *df['sepal width (cm)'].agg(['min', 'max']).astype(float))
-    petal_length = st.slider("Petal Length", *df['petal length (cm)'].agg(['min', 'max']).astype(float))
-    petal_width = st.slider("Petal Width", *df['petal width (cm)'].agg(['min', 'max']).astype(float))
+with st.sidebar:
+    st.header("📏 Input Flower Measurements")
+    sepal_length = st.slider("Sepal Length (cm)", float(df['sepal length (cm)'].min()), float(df['sepal length (cm)'].max()), float(df['sepal length (cm)'].mean()))
+    sepal_width  = st.slider("Sepal Width (cm)",  float(df['sepal width (cm)'].min()),  float(df['sepal width (cm)'].max()),  float(df['sepal width (cm)'].mean()))
+    petal_length = st.slider("Petal Length (cm)", float(df['petal length (cm)'].min()), float(df['petal length (cm)'].max()), float(df['petal length (cm)'].mean()))
+    petal_width  = st.slider("Petal Width (cm)",  float(df['petal width (cm)'].min()),  float(df['petal width (cm)'].max()),  float(df['petal width (cm)'].mean()))
+    
+    predict = st.button("🔮 Predict Species", type="primary")
 
-    submitted = st.form_submit_button("Predict")
-
-# ---------------------------
-# Prediction Logic
-# ---------------------------
-if submitted:
+# Prediction
+if predict:
     input_data = [[sepal_length, sepal_width, petal_length, petal_width]]
-    prediction = model.predict(input_data)[0]
-    probabilities = model.predict_proba(input_data)[0]
-    predicted_species = target_names[prediction]
+    pred = model.predict(input_data)[0]
+    probs = model.predict_proba(input_data)[0]
+    species = target_names[pred]
 
-    st.success(f"🌼 Predicted Species: **{predicted_species}**")
+    st.success(f"Predicted Species: **{species}** 🌷")
 
-    st.write("### Prediction Probabilities")
-    prob_df = pd.DataFrame({
-        "Species": target_names,
-        "Probability": probabilities
-    })
+    st.subheader("Confidence Scores")
+    prob_df = pd.DataFrame({"Species": target_names, "Probability": probs})
     st.bar_chart(prob_df.set_index("Species"))
 
-    # Download Log
-    with st.expander("📥 Download Prediction Log"):
-        log_df = pd.DataFrame({
-            "Sepal Length": [sepal_length],
-            "Sepal Width": [sepal_width],
-            "Petal Length": [petal_length],
-            "Petal Width": [petal_width],
-            "Predicted Species": [predicted_species]
+    with st.expander("💾 Download This Prediction"):
+        log = pd.DataFrame({
+            "Sepal Length (cm)": [sepal_length],
+            "Sepal Width (cm)":  [sepal_width],
+            "Petal Length (cm)": [petal_length],
+            "Petal Width (cm)":  [petal_width],
+            "Prediction": [species]
         })
+        csv = log.to_csv(index=False).encode()
+        st.download_button("Download CSV", csv, "iris_prediction.csv", "text/csv")
 
-        csv = log_df.to_csv(index=False).encode("utf-8")
-        st.download_button("Download CSV", csv, "prediction_log.csv", "text/csv")
+# Expandable Sections (all unique emojis)
+with st.expander("🌿 View Full Iris Dataset"):
+    st.dataframe(df, use_container_width=True)
 
-# ---------------------------
-# Dataset View
-# ---------------------------
-with st.expander("📊 View Iris Dataset"):
-    st.dataframe(df)
-
-# ---------------------------
-# Feature Importance
-# ---------------------------
-with st.expander("🔍 Feature Importance"):
-    importances = model.feature_importances_
-    feat_df = pd.DataFrame({
+with st.expander("⚖️ Feature Importance"):
+    imp = pd.DataFrame({
         "Feature": df.columns[:-1],
-        "Importance": importances
-    }).sort_values("Importance")
-    st.bar_chart(feat_df.set_index("Feature"))
+        "Importance": model.feature_importances_
+    }).sort_values("Importance", ascending=True)
+    st.bar_chart(imp.set_index("Feature"))
 
-with st.expander("🧠 Feature Importance Explanation"):
+with st.expander("🧭 Why These Features Matter"):
     st.write("""
-    - **Petal length** and **petal width** dominate because the three iris species differ mainly in petal structure.
-    - **Sepal measurements** matter less because their ranges overlap across species.
-    - The model learns boundaries mostly from petal features.
+    - Petal length & width are the strongest signals — species separate cleanly here  
+    - Sepal dimensions overlap a lot, so the model trusts them less  
+    - Random Forest automatically discovered the famous "petal rule" botanists use!
     """)
 
-# ---------------------------
-# Confusion Matrix
-# ---------------------------
-with st.expander("📉 Confusion Matrix"):
+with st.expander("🎯 Confusion Matrix"):
     cm = confusion_matrix(df['Species'], model.predict(df.iloc[:, :-1]))
     fig, ax = plt.subplots()
-    sns.heatmap(cm, annot=True, cmap="Blues", fmt="d",
-                xticklabels=target_names,
-                yticklabels=target_names)
-    plt.xlabel("Predicted")
-    plt.ylabel("Actual")
+    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", 
+                xticklabels=target_names, yticklabels=target_names, ax=ax)
+    ax.set_xlabel("Predicted")
+    ax.set_ylabel("Actual")
     st.pyplot(fig)
 
-# ---------------------------
-# ROC Curves
-# ---------------------------
-with st.expander("📈 ROC Curves"):
+with st.expander("📈 ROC Curves (One-vs-Rest)"):
     lb = LabelBinarizer()
-    y_true = lb.fit_transform(df["Species"])
-    y_score = model.predict_proba(df.iloc[:, :-1])
+    y_bin = lb.fit_transform(df["Species"])
+    y_prob = model.predict_proba(df.iloc[:, :-1])
 
     fig, ax = plt.subplots()
-    for i, label in enumerate(target_names):
-        fpr, tpr, _ = roc_curve(y_true[:, i], y_score[:, i])
+    for i, name in enumerate(target_names):
+        fpr, tpr, _ = roc_curve(y_bin[:, i], y_prob[:, i])
         roc_auc = auc(fpr, tpr)
-        ax.plot(fpr, tpr, label=f"{label} (AUC = {roc_auc:.2f})")
-
-    ax.plot([0, 1], [0, 1], linestyle="--")
+        ax.plot(fpr, tpr, label=f"{name} (AUC = {roc_auc:.3f})")
+    ax.plot([0,1],[0,1],"k--")
     ax.set_xlabel("False Positive Rate")
     ax.set_ylabel("True Positive Rate")
     ax.legend()
     st.pyplot(fig)
 
-# ---------------------------
-# Evaluation
-# ---------------------------
-with st.expander("📊 Model Evaluation"):
+with st.expander("🏆 Model Performance Summary"):
     y_pred = model.predict(df.iloc[:, :-1])
-    accuracy = accuracy_score(df["Species"], y_pred)
-
-    st.write(f"**Accuracy:** {accuracy:.3f}")
-    st.text("Classification Report:")
-    st.text(classification_report(df["Species"], y_pred, target_names=target_names))
+    st.metric("Accuracy", f"{accuracy_score(df['Species'], y_pred):.3%}")
+    st.text(classification_report(df['Species'], y_pred, target_names=target_names))
 
 st.markdown("---")
-st.caption("Built with ❤️ using Streamlit By Hussain-Murtazaa")
+st.caption("Built with ❤️ using Streamlit • Model: Random Forest")
