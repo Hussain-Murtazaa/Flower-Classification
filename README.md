@@ -112,20 +112,6 @@ The model predicts the flower species.
 
 Confidence levels and charts are displayed dynamically.
 
-with st.expander("❓ Why This Project?"):
-    st.write("""
-    This project demonstrates the end-to-end workflow of deploying a real machine-learning model:
-
-    - Loading and preprocessing data  
-    - Training a Random Forest classifier  
-    - Serving predictions through a modern UI (Streamlit)  
-    - Visualizing metrics like confusion matrix, ROC, and feature importances  
-    - Allowing users to experiment interactively with ML models  
-
-    The Iris dataset is intentionally simple — the goal is to show clean engineering, not complexity.
-    """)
-
-
 ❤️ Author
 
 Hussain Murtazaa
