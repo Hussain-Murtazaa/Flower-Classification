@@ -67,7 +67,7 @@ Random Forest	Classification algorithm
 
 Clone the repository:
 
-git clone https://github.com/Huddsin-Murtazaa/Flower-Classification.git
+git clone https://github.com/Hussain-Murtazaa/Flower-Classification.git
 cd your-repo-name
 
 
