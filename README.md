@@ -1,3 +1,4 @@
+![Iris Flower Classifier Banner](https://github.com/Hussain-Murtazaa/Flower-Classification/raw/main/banner.png)
 🌸 Iris Flower Species Classifier
 A simple, interactive ML web app built with Streamlit
 
