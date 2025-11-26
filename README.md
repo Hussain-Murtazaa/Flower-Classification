@@ -67,7 +67,7 @@ Random Forest	Classification algorithm
 
 Clone the repository:
 
-git clone https://github.com/your-username/your-repo-name.git
+git clone https://github.com/Huddsin-Murtazaa/Flower-Classification.git
 cd your-repo-name
 
 
@@ -111,18 +111,6 @@ User inputs are captured from sliders.
 The model predicts the flower species.
 
 Confidence levels and charts are displayed dynamically.
-
-✨ Future Enhancements (Optional)
-
-Add custom CSS styling or theming
-
-Add model comparison (SVM, Logistic Regression, KNN)
-
-Deploy on Streamlit Cloud, Render, or Vercel
-
-Add image-based prediction using CNNs
-
-Add a REST API endpoint for prediction
 
 ❤️ Author
 
