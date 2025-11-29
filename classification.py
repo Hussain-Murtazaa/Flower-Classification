@@ -33,13 +33,10 @@ st.markdown("""
     
     /* Header styling */
     h1 {
-        background: linear-gradient(90deg, #667eea, #764ba2);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
         font-size: 48px !important;
         font-weight: 700 !important;
         margin-bottom: 10px !important;
+        color: #667eea !important;
     }
     
     h2, h3 {
@@ -120,7 +117,7 @@ st.markdown("""
 # Title with subtitle
 col1, col2 = st.columns([3, 1])
 with col1:
-    st.title("🌸 Iris Flower Species Classifier")
+    st.title("🌺 Iris Flower Species Classifier")
     st.markdown("*Predict iris species using machine learning* 🤖")
 
 with col2:
